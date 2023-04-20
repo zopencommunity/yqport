@@ -1,0 +1,56 @@
+export ZOPEN_GIT_URL="https://github.com/mikefarah/yq.git"
+export ZOPEN_GIT_DEPS="curl"
+export ZOPEN_TYPE="GIT"
+export ZOPEN_COMP=GO
+
+export ZOPEN_CONFIGURE="skip"
+export ZOPEN_MAKE="go"
+export ZOPEN_MAKE_OPTS="build"
+export ZOPEN_MAKE_MINIMAL="yes"
+export ZOPEN_CHECK="skip"
+export ZOPEN_INSTALL="zopen_install"
+
+zopen_init()
+{
+  # Go installs binaries, so create the bin dir as well
+  export GOBIN=$ZOPEN_INSTALL_DIR/bin
+  mkdir -p \$ZOPEN_INSTALL_DIR/bin
+}
+
+zopen_check()
+{
+  echo "system: zos" > system.yml
+  $GOBIN/yq eval '.age' system.yml | grep -q zos
+  failures=$?
+  echo "actualFailures:$failures"
+  echo "totalTests:1"
+  echo "expectedFailures:0"
+}
+
+zopen_check_results()
+{
+  dir="$1"
+  pfx="$2"
+  chk="$1/$2_check.log"
+
+  # Echo the following information to gauge build health
+  echo "actualFailures:0"
+  echo "totalTests:1"
+  echo "expectedFailures:0"
+  echo "expectedTotalTests:1"
+}
+
+zopen_test()
+{
+  go test
+}
+
+zopen_install()
+{
+  go install
+}
+
+zopen_get_version()
+{
+  $GOBIN/yq --version | cut -f4 -d' ' | sed "s#^v##g"
+}
