@@ -15,6 +15,7 @@ zopen_init()
   export GOBIN=$ZOPEN_INSTALL_DIR/bin
   mkdir -p \$ZOPEN_INSTALL_DIR/bin
   unset CC CXX
+  export CGO_ENABLED=0 # disable C Go as it's not needed in yq
 }
 
 zopen_check()
