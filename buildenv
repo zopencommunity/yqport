@@ -1,6 +1,9 @@
-export ZOPEN_GIT_URL="https://github.com/mikefarah/yq.git"
-export ZOPEN_GIT_DEPS="comp_go"
-export ZOPEN_TYPE="GIT"
+# bump: yq-version /YQ_VERSION="(.*)"/ https://github.com/mikefarah/yq.git|semver:^4
+YQ_VERSION=""
+
+export ZOPEN_BUILD_LINE="DEV"
+export ZOPEN_DEV_URL="https://github.com/mikefarah/yq.git"
+export ZOPEN_DEV_DEPS="comp_go"
 
 export ZOPEN_CONFIGURE="skip"
 export ZOPEN_MAKE="go"
