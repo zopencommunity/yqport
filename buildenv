@@ -4,7 +4,7 @@ YQ_VERSION="4.43.1"
 export ZOPEN_BUILD_LINE="DEV"
 export ZOPEN_CATEGORIES="utilities"
 export ZOPEN_DEV_URL="https://github.com/mikefarah/yq.git"
-export ZOPEN_DEV_DEPS="comp_go"
+export ZOPEN_DEV_DEPS="check_go"
 
 export ZOPEN_CONFIGURE="skip"
 export ZOPEN_MAKE="go"
