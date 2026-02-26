@@ -25,6 +25,7 @@ zopen_init()
 zopen_check()
 {
   rc=0
+  BINARY=""
   # Smoke test
   echo "--- RUN   TestSmoke"
   
