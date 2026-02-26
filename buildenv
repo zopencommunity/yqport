@@ -24,28 +24,30 @@ zopen_init()
 
 zopen_check()
 {
+  rc=0
   # Smoke test
   echo "--- RUN   TestSmoke"
   
   # The binary should be in yq/yq if built from root, or ./yq if built from yq/
-  if [ -f "yq/yq" ]; then
+  if [ -x "yq/yq" ]; then
     BINARY="./yq/yq"
-  elif [ -f "./yq" ]; then
+  elif [ -x "./yq" ]; then
     BINARY="./yq"
-  else
-    # Fallback to searching
-    BINARY=$(find . -name yq -type f -executable | head -n 1)
+  elif [ -n "$GOBIN" ] && [ -x "$GOBIN/yq" ]; then
+    BINARY="$GOBIN/yq"
   fi
   
   if [ -z "$BINARY" ]; then
     echo "Error: yq binary not found"
     echo "--- FAIL: TestSmoke (0.00s)"
+    rc=1
   else
     echo "system: zos" > smoke_test.yml
     if "$BINARY" eval '.system' smoke_test.yml | grep -q zos; then
       echo "--- PASS: TestSmoke (0.00s)"
     else
       echo "--- FAIL: TestSmoke (0.00s)"
+      rc=1
     fi
     rm smoke_test.yml
   fi
@@ -57,7 +59,8 @@ zopen_check()
   export CGO_ENABLED=0
   export GOMAXPROCS=1
   # Run the unit tests with verbose output
-  go test -v $(go list ./... | grep -v -E 'examples' | grep -v -E 'test')
+  go test -v $(go list ./... | grep -vE '/(examples|test)($|/)') || rc=1
+  return $rc
 }
 
 zopen_check_results()
