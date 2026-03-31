@@ -1,10 +1,11 @@
 # bump: yq-version /YQ_VERSION="(.*)"/ https://github.com/mikefarah/yq.git|semver:^4
 YQ_VERSION="4.52.5"
 
-export ZOPEN_BUILD_LINE="DEV"
+export ZOPEN_BUILD_LINE="STABLE"
 export ZOPEN_CATEGORIES="utilities"
-export ZOPEN_DEV_URL="https://github.com/mikefarah/yq.git"
-export ZOPEN_DEV_DEPS="check_go"
+export ZOPEN_STABLE_URL="https://github.com/mikefarah/yq.git"
+export ZOPEN_STABLE_DEPS="check_go"
+export ZOPEN_STABLE_TAG="v${YQ_VERSION}"
 
 export ZOPEN_CONFIGURE="skip"
 export ZOPEN_MAKE="go"
@@ -12,6 +13,8 @@ export ZOPEN_MAKE_OPTS="build"
 export ZOPEN_MAKE_MINIMAL="yes"
 export ZOPEN_CHECK="zopen_check"
 export ZOPEN_INSTALL="zopen_install"
+export ZOPEN_COMP=GO
+export ZOPEN_NAME="yq-${ZOPEN_STABLE_TAG}"
 
 zopen_init()
 {
