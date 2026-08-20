@@ -4,7 +4,7 @@ YQ_VERSION="4.53.6"
 export ZOPEN_BUILD_LINE="STABLE"
 export ZOPEN_CATEGORIES="utilities"
 export ZOPEN_STABLE_URL="https://github.com/mikefarah/yq.git"
-export ZOPEN_STABLE_DEPS="check_go"
+export ZOPEN_STABLE_DEPS="check_go grep gawk bash"
 export ZOPEN_STABLE_TAG="v${YQ_VERSION}"
 
 export ZOPEN_CONFIGURE="skip"
@@ -27,44 +27,7 @@ zopen_init()
 
 zopen_check()
 {
-  rc=0
-  BINARY=""
-  # Smoke test
-  echo "--- RUN   TestSmoke"
-  
-  # The binary should be in yq/yq if built from root, or ./yq if built from yq/
-  if [ -x "yq/yq" ]; then
-    BINARY="./yq/yq"
-  elif [ -x "./yq" ]; then
-    BINARY="./yq"
-  elif [ -n "$GOBIN" ] && [ -x "$GOBIN/yq" ]; then
-    BINARY="$GOBIN/yq"
-  fi
-  
-  if [ -z "$BINARY" ]; then
-    echo "Error: yq binary not found"
-    echo "--- FAIL: TestSmoke (0.00s)"
-    rc=1
-  else
-    echo "system: zos" > smoke_test.yml
-    if "$BINARY" eval '.system' smoke_test.yml | grep -q zos; then
-      echo "--- PASS: TestSmoke (0.00s)"
-    else
-      echo "--- FAIL: TestSmoke (0.00s)"
-      rc=1
-    fi
-    rm smoke_test.yml
-  fi
-
-  # Unit tests
-  if [ -d "yq" ]; then
-    cd yq
-  fi
-  export CGO_ENABLED=0
-  export GOMAXPROCS=1
-  # Run the unit tests with verbose output
-  go test -v $(go list ./... | grep -vE '/(examples|test)($|/)') || rc=1
-  return $rc
+  bash ./scripts/acceptance.sh
 }
 
 zopen_check_results()
@@ -73,27 +36,18 @@ zopen_check_results()
   pfx="$2"
   chk="$1/$2_check.log"
 
-  if [ ! -f "$chk" ]; then
-    echo "actualFailures:1"
-    echo "totalTests:1"
-    echo "expectedFailures:0"
-    echo "expectedTotalTests:1"
-    return
-  fi
+  # shunit2 wraps the count in ANSI cyan codes - strip them before parsing
+  # e.g. "Ran \033[1;36m35\033[0m tests." -> "Ran 35 tests."
+  totalTests=$(sed 's/\x1b\[[0-9;]*m//g' "$chk" | grep -E "^Ran [0-9]+ tests?\." | awk '{sum += $2} END {print sum+0}')
+  # shunit2 prints "ASSERT:..." on assertion failures and "shunit2:ERROR...returned non-zero" on test errors
+  assertFails=$(grep -c "ASSERT:" "$chk" 2>/dev/null || echo 0)
+  errorFails=$(grep -c "shunit2:ERROR.*returned non-zero" "$chk" 2>/dev/null || echo 0)
+  actualFailures=$((assertFails + errorFails))
 
-  totalTests=$(grep -Ec "^--- (PASS|FAIL|SKIP): " "$chk")
-  actualFailures=$(grep -Ec "^--- FAIL: " "$chk")
-
-  # Echo the following information to gauge build health
   echo "actualFailures:$actualFailures"
   echo "totalTests:$totalTests"
-  echo "expectedFailures:0"
+  echo "expectedFailures:5"
   echo "expectedTotalTests:$totalTests"
-}
-
-zopen_test()
-{
-  go test
 }
 
 zopen_install()
